@@ -1,0 +1,24 @@
+PROJECT DETAILS
+===============
+Name: Agentic Data Analysis (Logistics Allocation Suite)
+Type: Full-Stack Web Application (FastAPI + Flutter Web)
+
+CORE ARCHITECTURE:
+This application replaces black-box LLM systems with a fully deterministic Cascade Fuzzy Logic & Rule-Based Inference System. It is designed to evaluate real-time food-delivery logistics data to determine optimal rider allocation.
+
+1. DATA INGESTION:
+The backend utilizes Pandas to process historical CSV datasets (e.g., sales.csv). It extracts critical metrics such as Kitchen Preparation Time (KPT), Rider Waiting Time (RWT), average Order Ratings, and Order Hours. These are normalized into a [0.0 - 1.0] scale to seed the interactive simulation.
+
+2. PREDICTION AGENT (Fuzzy Stage 1):
+Accepts 'Time of Day' and 'Customer Rating'.
+- Fuzzification: Tri/Trap membership functions map values to Morning/Afternoon/Evening and Low/Medium/High sets.
+- Rules: Determines active Service Demand.
+- Defuzzification: Computes a precise "Order Flow" metric using a weighted centroid mapping.
+
+3. DECISION AGENT (Fuzzy Stage 2):
+Accepts the computed 'Order Flow' from Stage 1, alongside 'KPT' and 'RWT'.
+- Evaluates System State: UNDERUTILIZED, OPTIMAL, OVERLOADED.
+- Evaluates Demand Intensity: LOW, MEDIUM, HIGH.
+- Computes Allocation Output: REDUCE, HOLD, SCALE UP using the exact overlapping boundaries (Reduce: < 0.25, Hold: 0.25-0.55, Scale Up: > 0.55).
+
+All calculations occur with 0 delay at 60fps within the local Flutter application state, guaranteeing highly reactive visual insights for the end user.

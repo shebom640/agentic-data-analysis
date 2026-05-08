@@ -1,0 +1,53 @@
+# ==========================================
+# Python Ignored Files & Folders
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+
+# ==========================================
+# Flutter & Dart Ignored Files & Folders
+# ==========================================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+flutter_export_environment.sh
+pubspec.lock
+.pub-cache/
+.pub/
+
+# ==========================================
+# IDEs and Editors
+# ==========================================
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.iml
+
+# ==========================================
+# OS and System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# Local/User Artifacts
+# ==========================================
+app_screenshots/
+*.log

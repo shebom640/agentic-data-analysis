@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+scikit-fuzzy
+scikit-learn
+sentence-transformers
+faiss-cpu
+openai
+streamlit
+plotly
+fastapi
+uvicorn

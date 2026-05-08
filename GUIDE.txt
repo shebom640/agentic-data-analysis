@@ -1,0 +1,30 @@
+=========================================================
+AGENTIC DATA ANALYSIS - EXECUTION GUIDE
+=========================================================
+
+This repository simulates a deterministic multi-agent logistics pipeline.
+
+1. STARTING THE BACKEND
+-----------------------
+Navigate to the `backend` folder.
+Run:
+   pip install -r requirements.txt
+   uvicorn main:app --reload --port 8000
+   
+The backend will run on localhost:8000. It handles CSV ingestion and complex dataset processing for the inference pipelines.
+
+2. STARTING THE FRONTEND
+------------------------
+Navigate to the `data-analysis-agent` folder.
+Run:
+   flutter pub get
+   flutter run -d chrome --web-port 8080
+
+The Flutter web dashboard will run on localhost:8080. It interacts with the backend for data ingestion and provides a 60fps real-time inference engine.
+
+3. USING THE DASHBOARD
+----------------------
+- DATA INGESTION: Upload a .csv file (like the included sales.csv) to automatically scale the sliders based on the dataset's normalized averages.
+- PREDICTION AGENT: Drag the Time and Rating sliders to adjust the input space. The continuous membership ranges (Morning/Afternoon/Evening and Low/Medium/High) will update immediately, calculating the Predicted Order Flow.
+- DECISION AGENT: The computed Order Flow cascades down. Drag the KPT and RWT sliders to adjust the operational load. The engine will instantly recalculate the optimal resource strategy (REDUCE, HOLD, SCALE UP).
+- CHARTS: Toggle 'Prediction Charts' or 'Decision Charts' from the Dashboard Preferences row to visualize the active mathematical membership curves and centroid mappings.

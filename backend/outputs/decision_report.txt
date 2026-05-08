@@ -1,0 +1,12 @@
+
+Decision Summary:
+- Demand Level: Medium
+- Confidence Score: 56.84
+
+Context Used:
+['If demand is medium, maintain current inventory.', 'If demand is high and ratings are good, increase inventory.']
+
+Final Recommendation:
+Increase inventory by 15% if demand is high.
+Maintain inventory if medium.
+Reduce inventory if low.
