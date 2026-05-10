@@ -25,20 +25,43 @@ The core reasoning of the system is divided into three distinct, deterministic a
 **Role:** Predicts the incoming order flow and service demand intensity using continuous fuzzy membership functions.
 
 **How it works:**
-- **Fuzzification:** Takes normalized continuous inputs (such as KPT, RWT, Active Orders, or Time of Day/Ratings) and maps them into fuzzy membership degrees using explicitly coded Triangular (`trimf`) and Trapezoidal (`trapmf`) membership functions. 
-  - For example, Time of Day is mapped to continuous fuzzy sets for `Morning`, `Afternoon`, and `Evening`. KPT is mapped to `Low`, `Medium`, and `High`.
-- **Rule Base 1 (Service Demand Inference):** Applies intersection (MIN) operators over IF-THEN rules to determine demand. For instance, if it is Evening and customer ratings are High, the inferred demand heavily leans into the High subset.
+- **Fuzzification:** Takes normalized continuous inputs (such as Time of Day and Customer Ratings) and maps them into fuzzy membership degrees using explicitly coded Triangular (`trimf`) and Trapezoidal (`trapmf`) membership functions. 
+  - For example, Time of Day is mapped to continuous fuzzy sets for `Morning`, `Afternoon`, and `Evening`. Customer Ratings are mapped to `Low`, `Medium`, and `High`.
+- **Rule Base 1 (Service Demand Inference):** Applies intersection (MIN) operators over IF-THEN rules combining Time and Rating to determine intermediate Service Demand.
+- **Rule Base 2 (Order Flow Inference):** Applies a full 3x3 fuzzy rule base combining the intermediate Service Demand with Time of Day to deduce the final Order Flow (`Low`, `Medium`, `High`).
 - **Defuzzification:** Uses a mathematical Centroid Defuzzification method to condense the fuzzy array into a single, deterministic prediction index ranging from 0.0 to 1.0.
-- **Classification:** Evaluates the continuous index against hardcoded thresholds (e.g., `index < 0.3 = LOW`, `index > 0.7 = HIGH`) to output discrete categorical predictions for the order flow.
+- **Classification:** Evaluates the continuous index against hardcoded thresholds to output discrete categorical predictions for the order flow.
 
 ### 3. Decision Agent
 **Role:** Acts as the penultimate decision engine, calculating the final, actionable rider deployment strategy.
 
 **How it works:**
-- **Input Integration:** Ingests the fuzzified membership degrees calculated by the Prediction Agent (specifically the degrees of KPT, RWT, and Order Flow).
+- **Input Integration:** Ingests normalized float values of KPT, RWT, and Order Flow.
 - **Cascade Fuzzy Inference:** Executes a multi-stage rule base to deduce operational actions:
-  - **Step 1 (System State):** Evaluates KPT and RWT to determine if the logistics network is `UNDERUTILIZED`, `OPTIMAL`, or `OVERLOADED`. For example, high kitchen times combined with high rider wait times guarantee an `OVERLOADED` state.
-  - **Step 2 (Demand Intensity):** Fuses the calculated System State with the Order Flow prediction to evaluate the immediate operational load (`LOW`, `MEDIUM`, or `HIGH`).
-  - **Step 3 (Allocation Strategy):** Maps the Demand Intensity directly to an actionable strategy: `REDUCE`, `HOLD`, or `SCALE UP` riders.
+  - **Step 1 (Fuzzification):** Evaluates KPT, RWT, and Order Flow inputs to determine their respective fuzzy memberships (`Low`, `Medium`, `High`).
+  - **Step 2 (Rule Base 1 - System State):** Evaluates KPT and RWT to determine if the logistics network is `UNDERUTILIZED`, `OPTIMAL`, or `OVERLOADED`. For example, high kitchen times combined with high rider wait times guarantee an `OVERLOADED` state.
+  - **Step 3 (Rule Base 2 - Demand Intensity):** Fuses the calculated System State with the Order Flow prediction to evaluate the immediate operational load (`LOW`, `MEDIUM`, or `HIGH`).
+  - **Step 4 (Rule Base 3 - Allocation Strategy):** Runs a final 3x3 rule base mapping the Demand Intensity against allocation tendencies to deduce a comprehensive set of fuzzy outcomes for `REDUCE`, `HOLD`, or `SCALE UP` riders.
 - **Final Defuzzification:** Calculates a continuous decision index using the Centroid method across the Reduce (0.0), Hold (0.5), and Scale-Up (1.0) poles.
-- **Actionable Output:** Applies fixed thresholds to generate the final deployment decision. It outputs a comprehensive JSON payload containing the discrete action (`SCALE UP`/`REDUCE`), recommended rider adjustments (e.g., +30 riders), priority zone targeting, and a human-readable list of logic steps explaining exactly *why* the decision was made.
+- **Actionable Output:** Applies fixed thresholds (`< 0.3 REDUCE`, `<= 0.7 HOLD`, `> 0.7 SCALE UP`) to generate the final deployment decision. It outputs a comprehensive JSON payload containing the discrete action, confidence scores, internal fuzzy metrics, and a dynamic human-readable reasoning string detailing the entire decision-making process.
+
+## 3. Technology Stack & Implementation Logic
+
+The Arsenic Analytics platform is engineered for high availability, zero latency, and strict mathematical transparency.
+
+### Frontend Presentation Layer
+- **Framework:** Flutter (Dart) compiled for Web.
+- **Role:** Delivers a highly responsive, high-contrast Light Theme interface and chatbot terminal.
+- **Logic Implementation:** The dashboard recalculates complex fuzzy inference chains locally within Dart's state loop. `CustomPainter` classes are mathematically engineered to manually render triangular and trapezoidal membership curves, intersection hotspots, and centroid gauges directly onto the canvas.
+
+### Backend Data Layer
+- **Framework:** FastAPI (Python).
+- **Data Engineering:** Pandas & NumPy.
+- **Role:** Serves as the primary data ingestion and preprocessing pipeline. When a CSV is uploaded, Pandas is utilized to parse the raw data, standardize naming conventions, perform temporal sorting, and extract statistical baselines (e.g., Rider Wait Time, Kitchen Prep Time, Order Velocity).
+
+### Deterministic Intelligence Engine
+- **Paradigm:** Mathematical Cascade Fuzzy Inference (Strictly LLM-Free).
+- **Core Logic Implementations:**
+  - **Fuzzification Mathematics:** Utilizes explicitly hardcoded `trimf` (triangular) and `trapmf` (trapezoidal) functions to map crisp continuous variables into fuzzy subsets (`Low`, `Medium`, `High`).
+  - **Inference Operators:** The rule engine strictly leverages the mathematical `MIN` operator (intersection) to evaluate IF-THEN antecedents and the `MAX` operator (union) to aggregate overlapping active rules.
+  - **Defuzzification:** Employs the Centroid Defuzzification Method (geometric center of gravity calculation). It aggregates strategy vectors using crisp centers (`REDUCE: 0.0`, `HOLD: 0.5`, `SCALE_UP: 1.0`) divided by the total sum of membership degrees. This mathematically collapses multi-dimensional fuzzy states into a single, definitive predictive index.

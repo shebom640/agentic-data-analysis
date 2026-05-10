@@ -66,10 +66,26 @@ class OrderFlowAgent:
         demand_high = max(r6, r8, r9)
 
         # 3. RULE BASE 2: Order Flow
-        # Direct mapping as per instruction logic flow
-        of_low = demand_low
-        of_med = demand_med
-        of_high = demand_high
+        # Service Demand \ Time -> Order Flow
+        
+        # LOW ORDER FLOW
+        of1 = min(demand_low, mu_morning)
+        of2 = min(demand_low, mu_afternoon)
+        of3 = min(demand_med, mu_morning)
+        
+        # MEDIUM ORDER FLOW
+        of4 = min(demand_low, mu_evening)
+        of5 = min(demand_med, mu_afternoon)
+        of6 = min(demand_high, mu_morning)
+        
+        # HIGH ORDER FLOW
+        of7 = min(demand_med, mu_evening)
+        of8 = min(demand_high, mu_afternoon)
+        of9 = min(demand_high, mu_evening)
+        
+        of_low = max(of1, of2, of3)
+        of_med = max(of4, of5, of6)
+        of_high = max(of7, of8, of9)
 
         # 4. DEFUZZIFICATION (Centroid)
         # Crisp output centers: LOW=0.25, MED=0.50, HIGH=0.75
