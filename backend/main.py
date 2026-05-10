@@ -363,18 +363,22 @@ def chat(payload: dict):
         priority_zones = metrics["priority_zones"]
         max_orders_historic = 500  # mock historical max
 
-        # Fuzzy Agent logic
-        fuzzy = fuzzy_agent.predict(
-            active_orders=active_orders,
-            max_orders=max_orders_historic,
-            rider_wait_time=avg_rider_wait,
-            kpt_duration=avg_kpt,
-            order_hour=order_hour,
-            avg_distance=avg_dist
-        )
+        # To ensure perfect sync with Dart Dashboard:
+        kpt_norm = max(0.0, min(1.0, avg_kpt / 45.0))
+        rwt_norm = max(0.0, min(1.0, avg_rider_wait / 30.0))
+        time_norm = max(0.0, min(1.0, order_hour / 24.0))
+        
+        avg_rating = metrics.get("avg_rating", 4.5)
+        rating_norm = max(0.0, min(1.0, avg_rating / 5.0))
+
+        of_prediction = OrderFlowAgent.predict(time_norm, rating_norm)
+        of_norm = of_prediction["prediction_index"]
 
         # Decision Agent logic
-        decision_json = decision_agent.decide(fuzzy, priority_zones)
+        decision_json = decision_agent.decide(kpt_norm, rwt_norm, of_norm, priority_zones=priority_zones)
+
+        # Still call fuzzy_agent for backward compatibility payload
+        fuzzy = fuzzy_agent.evaluate(kpt_norm, rwt_norm, of_norm)
 
         # Convert dict to a formatted string for frontend display, or return dict directly
         explanation = f"DEPLOY: {decision_json['deploy_decision']} | LEVEL: {decision_json['deployment_level']}\n"
