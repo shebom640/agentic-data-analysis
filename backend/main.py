@@ -135,7 +135,7 @@ def find_rating_column(df):
     return None
 
 
-def extract_metrics(df):
+def extract_metrics(df, missing_values_count=0, transformations_count=0):
     active_orders = len(df)
     cols = {col.lower().replace(" ", "_"): col for col in df.columns}
 
@@ -236,7 +236,9 @@ def extract_metrics(df):
         "avg_dist": avg_dist,
         "order_hour": order_hour,
         "avg_rating": avg_rating,
-        "priority_zones": priority_zones
+        "priority_zones": priority_zones,
+        "missing_values_count": missing_values_count,
+        "transformations_count": transformations_count
     }
 
 
@@ -252,31 +254,15 @@ def upload(file: UploadFile = File(...)):
     with open(path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    # Ingestion agent standardizes columns, detects/sorts temporal columns,
+    # and imputes missing logistics data automatically
     analysis_agent.load_data(path)
 
-    df = analysis_agent.df
-
-    possible_date_cols = [
-        col for col in df.columns
-        if isinstance(col, str) and any(k in col.lower() for k in ["date", "time", "day"])
-    ]
-
-    if possible_date_cols:
-
-        date_col = possible_date_cols[0]
-
-        try:
-
-            df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-            df = df.sort_values(date_col, ascending=False)
-            df = df.reset_index(drop=True)
-
-            analysis_agent.df = df
-
-        except Exception:
-            pass
-
-    metrics = extract_metrics(analysis_agent.df)
+    metrics = extract_metrics(
+        analysis_agent.df,
+        missing_values_count=analysis_agent.missing_values_count,
+        transformations_count=analysis_agent.transformations_count
+    )
 
     return make_json_safe({
         "status": "uploaded",

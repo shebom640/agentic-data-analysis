@@ -19,6 +19,7 @@ The core reasoning of the system is divided into three distinct, deterministic a
 - **Ingestion & Standardization:** Reads CSV files uploaded by the user and immediately standardizes column names (e.g., stripping whitespace, converting to lowercase, and replacing spaces with underscores) to ensure downstream processing is robust against messy data.
 - **Chronological Sorting:** If temporal data (date/time) is detected, the agent sorts the records chronologically to enable time-series logic.
 - **Metric Extraction:** Iterates through the data to extract critical logistics variables such as `Active Orders`, `Average Rider Wait Time (RWT)`, `Kitchen Preparation Time (KPT)`, `Distance`, `Order Hour`, and `Priority Zones`. Missing or malformed data points are gracefully handled and defaulted to safe baseline values.
+- **Ingestion Quality Metrics:** Mathematically computes and reports back the raw **No. of Missing Values** detected, along with the precise **No. of Transformations** performed (including column renames, temporal sorting/conversions, and automated missing value imputations) to verify ingestion pipeline performance.
 - **Volatility Analysis:** Calculates statistical aggregates, such as standard deviation over rolling windows (e.g., rating volatility) and average trends, returning a structured summary to the frontend.
 
 ### 2. Prediction Agent (Order Flow / Fuzzy Agent)
