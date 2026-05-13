@@ -9,6 +9,17 @@ This application replaces black-box LLM systems with a fully deterministic Casca
 1. DATA INGESTION:
 The backend utilizes Pandas to process historical CSV datasets (e.g., sales.csv). It extracts critical metrics such as Kitchen Preparation Time (KPT), Rider Waiting Time (RWT), average Order Ratings, and Order Hours. These are normalized into a [0.0 - 1.0] scale to seed the interactive simulation.
 
+INGESTION & QUALITY METRICS:
+To guarantee absolute data reliability and transparency before feeding downstream fuzzy reasoning, the Pre-processing Agent computes two explicit metrics:
+- NO. OF MISSING VALUES:
+  * Definition: The total sum of all null, empty, or unparseable cell values across the entire raw CSV dataset before any processing or cleansing occurs.
+  * Purpose: Serves as a baseline metric representing raw dataset quality and data completeness.
+  * How it works: Evaluated mathematically using Pandas (`df.isna().sum().sum()`) upon reading the raw upload.
+- NO. OF TRANSFORMATIONS:
+  * Definition: A cumulative count of all data engineering operations performed to clean, restructure, and coerce the raw data into a reliable, standardized schema.
+  * Purpose: Quantifies how heavily the data was scrubbed and imputed, providing a clear explanation trail for auditability.
+  * How it works: Increments by 1 for each column renamed during standardization (whitespace stripping, lowercase conversion, space-to-underscore mapping); increments for each row successfully converted to proper Datetime objects; increments by 1 for chronological sorting and 1 for resetting dataframe index; and increments by 1 for each cell in key logistics columns (RWT, KPT, Distance, Hour, Rating) that was null or malformed and had to be coerced/imputed to safe default values.
+
 2. PREDICTION AGENT (Fuzzy Stage 1):
 Accepts 'Time of Day' and 'Customer Rating'.
 - Fuzzification: Tri/Trap membership functions map values to Morning/Afternoon/Evening and Low/Medium/High sets.
